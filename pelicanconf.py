@@ -43,6 +43,9 @@ TAGS_SAVE_AS=''
 ARTICLE_PATHS = ['blog']
 ARTICLE_URL = '{category}/{slug}/'
 ARTICLE_SAVE_AS = '{category}/{slug}/index.html'
+PAGE_PATHS = ['pages']
+PAGE_URL = '{slug}/'
+PAGE_SAVE_AS = '{slug}/index.html'
 
 DISPLAY_PAGES_ON_MENU = True
 
