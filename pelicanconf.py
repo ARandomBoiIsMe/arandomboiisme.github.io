@@ -1,6 +1,6 @@
 AUTHOR = 'Abah Olotuche Gabriel'
 SITENAME = "arandomboiisme.github.io"
-SITEURL = ""
+SITEURL = "https://arandomboiisme.github.io/"
 
 PATH = "content"
 
