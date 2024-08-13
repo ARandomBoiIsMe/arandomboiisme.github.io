@@ -17,11 +17,6 @@ TRANSLATION_FEED_ATOM = None
 AUTHOR_FEED_ATOM = None
 AUTHOR_FEED_RSS = None
 
-SOCIAL = (
-    ("GitHub", "https://github.com/ARandomBoiIsMe"),
-    ("Handmade Network", "https://handmade.network/m/anotherrandomboi")
-)
-
 DEFAULT_PAGINATION = 10
 
 # Uncomment following line if you want document-relative URLs when developing
@@ -51,7 +46,7 @@ ARTICLE_SAVE_AS = '{category}/{slug}/index.html'
 
 DISPLAY_PAGES_ON_MENU = True
 
-DIRECT_TEMPLATES = ['index', 'blog', 'projects']
+DIRECT_TEMPLATES = ['index', 'projects']
 BLOG_URL = 'blog/'
 BLOG_SAVE_AS = 'blog/index.html'
 PROJECT_URL = 'projects/'
