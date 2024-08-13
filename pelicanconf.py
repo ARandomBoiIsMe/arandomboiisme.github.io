@@ -46,7 +46,7 @@ ARTICLE_SAVE_AS = '{category}/{slug}/index.html'
 
 DISPLAY_PAGES_ON_MENU = True
 
-DIRECT_TEMPLATES = ['index', 'projects']
+DIRECT_TEMPLATES = ['index']
 BLOG_URL = 'blog/'
 BLOG_SAVE_AS = 'blog/index.html'
 PROJECT_URL = 'projects/'
