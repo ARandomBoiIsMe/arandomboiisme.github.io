@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block bigtitle %}
+    {{ SITENAME }}
+{% endblock %}
+
+{% block content %}
+    {% for page in draft_pages %}
+        {% if page.category == "home" %}
+            <div class="page-section" id="{{ page.slug }}">
+                {{ page.content }}
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endblock %}

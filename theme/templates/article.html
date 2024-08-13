@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block bigtitle %}
+    {{ article.title }} - {{ SITENAME }}
+{% endblock %}
+
+{% block content %}
+<div class="page-section">
+    <div class="row">
+        <div><a href="{{ SITEURL }}/{{ article.url }}">{{ article.title }}</a></div>
+        <div>{{ article.locale_date }}</div>
+    </div>
+    <div class="article-content">
+        {{ article.content }}
+    </div>
+</div>
+{% endblock %}

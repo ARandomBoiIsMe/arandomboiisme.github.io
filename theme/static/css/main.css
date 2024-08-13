@@ -1,0 +1,148 @@
+:root {
+    --main-color: #33C3F0;
+    --text-color: #fff;;
+    --border-color: #eee;
+}
+
+html {
+    background-color: #313338;
+}
+
+body {
+    font-size: 20px;
+    font-family: Consolas, monaco, monospace;
+}
+
+footer {
+    font-size: 15px;
+    font-family: Consolas, monaco, monospace;
+    color: var(--text-color);
+}
+
+.page-section {
+    color: var(--text-color);
+}
+
+.row {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+}
+
+.navbar {
+    text-align: center;
+}
+
+.navbar-list {
+    display: inline-block;
+}
+
+.navbar-item {
+    display: inline-block;
+    margin: 0 1rem;
+}
+
+.container {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.container, .container-center, .container-nav {
+    max-width: 800px;
+}
+
+.container-center, .container-nav, .header, .footer {
+    text-align: center;
+}
+
+.container-nav {
+    position: sticky;
+}
+
+a, a:visited {
+    color: var(--main-color);
+    text-decoration: underline;
+}
+
+.custom-line {
+    border: none;
+    height: 1px;
+    background-color: #ccc;
+    margin: 20px 0;
+    width: 100%;
+    opacity: 0.6;
+}
+
+ol, ul {
+    margin-left: 4rem;
+    list-style-position: outside;
+}
+
+ol li {
+    padding-left: 1rem;
+}
+
+dt {
+    display: inline-block;
+    width: 100px;
+    text-align: right;
+    margin-right: 1em;
+}
+
+dd {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+code {
+    font-family: 'Source Code Pro', monospace;
+    overflow-x: auto;
+}
+
+.header {
+    margin-top: 1rem;
+}
+
+.navbar {
+    height: auto;
+    position: sticky;
+    background-color: #313338;
+    width: 100%;
+    z-index: 100;
+}
+
+.navbar-list {
+    list-style: none;
+    margin-left: 25px;
+    margin-bottom: 10px;
+}
+
+.navbar-item {
+    float: left;
+}
+
+.navbar-link, .title-link {
+    text-decoration: none;
+    color: var(--text-color);
+}
+
+.navbar-link {
+    font-family: Consolas, monaco, monospace;
+    font-size: 15px;
+    font-weight: 200;
+    letter-spacing: .1rem;
+    margin-right: 35px;
+}
+
+.navbar-link.active, .title-link:hover {
+    color: var(--main-color);
+}
+
+@media (max-width: 549px) {
+    .footer {
+        white-space: pre-wrap;
+    }
+}
