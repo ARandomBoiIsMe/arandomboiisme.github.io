@@ -21,8 +21,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          git config user.name github-actions
-          git config user.email github-actions@github.com
 
       - name: Run Pelican and generate website
         run: |
