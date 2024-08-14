@@ -52,12 +52,16 @@ body {
     margin: 5px 10px;
 }
 
+.navbar-link {
+    padding: 0px 20px;
+}
+
 .navbar-link, .title-link {
     text-decoration: none;
     color: var(--text-color);
-    font-size: 0.9375rem; /* 15px at base font size */
+    font-size: 1.0rem; /* 15px at base font size */
     font-weight: 200;
-    letter-spacing: 0.1rem;
+    letter-spacing: 0.3rem;
     transition: color 0.3s ease;
 }
 
@@ -92,8 +96,50 @@ code {
     border-radius: 3px;
 }
 
+
+.page-section {
+    font-size: 1.0rem;
+    line-height: 1.6;
+}
+
+.page-section h1
+{ font-size: 1.4rem; }
+
+.page-section h2
+{ font-size: 1.3rem; }
+
+.page-section h3
+{ font-size: 1.2rem; }
+
+.page-section h4
+{ font-size: 1.1rem; }
+
+.page-section h5
+{ font-size: 1rem; }
+
+.page-section h6
+{ font-size: 0.9rem; }
+
+/* Blog title */
+.page-section .row a {
+    font-size: 1.2rem; /* Slightly larger than base */
+    font-weight: bold;
+}
+
+/* Blog date */
+.page-section .row div:last-child {
+    font-size: 0.9rem; /* Slightly smaller than base */
+    color: #888; /* Subdued color */
+}
+
+/* 'Read more' link */
+.read-more {
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
 footer {
-    font-size: 0.9375rem; /* 15px at base font size */
+    font-size: 0.9375rem;
     text-align: center;
     margin-top: 2rem;
     padding: 1rem 0;
@@ -101,11 +147,11 @@ footer {
 
 @media (max-width: 600px) {
     html {
-        font-size: 14px; /* Slightly smaller base font size for mobile */
+        font-size: 14px;
     }
 
     body {
-        font-size: 1.1429rem; /* Still 16px at new base font size */
+        font-size: 1.1429rem;
     }
 
     .navbar-list {
@@ -123,5 +169,21 @@ footer {
 
     .container {
         padding: 0 15px;
+    }
+
+    body {
+        font-size: 14px;
+    }
+
+    .page-section .row a {
+        font-size: 1.1rem;
+    }
+
+    .page-section .row div:last-child {
+        font-size: 0.8rem;
+    }
+
+    .page-section summary {
+        font-size: 0.85rem;
     }
 }
