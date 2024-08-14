@@ -1,0 +1,78 @@
+/* mobile.css */
+
+@media screen and (max-width: 768px) {
+    html {
+        font-size: 14px; /* Slightly smaller base font size for mobile */
+    }
+
+    body {
+        font-size: 1.1rem; /* Adjust body font size for mobile */
+    }
+
+    .container {
+        padding: 0 15px; /* Reduce padding on smaller screens */
+    }
+
+    .row {
+        flex-direction: column; /* Stack items vertically on mobile */
+        align-items: stretch;
+    }
+
+    .navbar {
+        padding: 5px 0;
+    }
+
+    .navbar-list {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .navbar-item {
+        margin: 5px 0;
+    }
+
+    .navbar-link {
+        padding: 5px 10px;
+        font-size: 0.9rem;
+    }
+
+    .header {
+        margin-top: 1rem;
+    }
+
+    .custom-line {
+        margin: 15px 0;
+    }
+
+    .page-section {
+        font-size: 0.9rem;
+    }
+
+    .page-section h1 { font-size: 1.3rem; }
+    .page-section h2 { font-size: 1.2rem; }
+    .page-section h3 { font-size: 1.1rem; }
+    .page-section h4 { font-size: 1rem; }
+    .page-section h5 { font-size: 0.9rem; }
+    .page-section h6 { font-size: 0.8rem; }
+
+    /* Blog title */
+    .page-section .row a {
+        font-size: 1.1rem;
+    }
+
+    /* Blog date */
+    .page-section .row div:last-child {
+        font-size: 0.8rem;
+    }
+
+    /* 'Read more' link */
+    .read-more {
+        font-size: 0.8rem;
+    }
+
+    footer {
+        font-size: 0.85rem;
+        margin-top: 1.5rem;
+        padding: 0.75rem 0;
+    }
+}

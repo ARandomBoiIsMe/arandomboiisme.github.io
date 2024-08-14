@@ -145,45 +145,6 @@ footer {
     padding: 1rem 0;
 }
 
-@media (max-width: 600px) {
-    html {
-        font-size: 14px;
-    }
-
-    body {
-        font-size: 1.1429rem;
-    }
-
-    .navbar-list {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .navbar-item {
-        margin: 5px 0;
-    }
-
-    ol, ul {
-        margin-left: 2rem;
-    }
-
-    .container {
-        padding: 0 15px;
-    }
-
-    body {
-        font-size: 14px;
-    }
-
-    .page-section .row a {
-        font-size: 1.1rem;
-    }
-
-    .page-section .row div:last-child {
-        font-size: 0.8rem;
-    }
-
-    .page-section summary {
-        font-size: 0.85rem;
-    }
+img {
+    max-width: 100%;
 }
