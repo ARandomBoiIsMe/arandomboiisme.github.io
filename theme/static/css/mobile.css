@@ -75,4 +75,9 @@
         margin-top: 1.5rem;
         padding: 0.75rem 0;
     }
+
+    pre {
+        width: 100%; /* Make the code block full width */
+        overflow-x: scroll; /* Add horizontal scrolling if needed */
+    }
 }

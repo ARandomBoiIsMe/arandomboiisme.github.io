@@ -4,7 +4,7 @@ Date: 14 August 2024
 Category: blog
 tldr: Yay
 
-    #!bash
+    :::bash
     $ cat image.bmp
 
 That's literally it. Bye.
@@ -62,7 +62,7 @@ Well, they are! Remember when I said that some formats can choose to use more co
 
 The factor that decides this quality in an image is called its [bit depth](https://www.minitool.com/lib/bit-depth.html). It's essentially how many bits are used to represent the smallest unit in some sort of data. In this case, it refers to how many bits are used to store the color information of a single pixel in the image.
 
-The bit depth for this particular image is 24 bits. More on how I arrived at that number later. This means that each pixel of this image is comprised of 24 bits (or 3 bytes). In this case, each byte is used to store one part of the image's [RGB](https://en.wikipedia.org/wiki/RGB_color_model) data.
+The bit depth for this particular image is 24 bits. More on how I arrived at that number later. This means that each pixel of this image is comprised of 24 bits (or 3 bytes). In this case, each byte is used to store one part of a pixel's [RGB](https://en.wikipedia.org/wiki/RGB_color_model) data.
 
 Okay, decoding time!
 
@@ -80,7 +80,7 @@ The fact that there are two headers really threw me off, especially since the se
 
 This header is just a sequence of bytes that denotes the `signature`, `size`, two reserved and generally unused bits, and the `image_start` offset of the pixel data's location. I had to follow a [pretty nice video](https://youtu.be/VBY_UEiw9F8) to understand how to correctly read the bytes, since this was my first time doing anything of the sort. I ended up with this for parsing the BMP header bytes:
 
-    #!python
+    :::python
     with open(f'480-360-sample.bmp', 'rb') as f:
         # Parses the BMP file header
         signature = f.read(2).decode('ascii')
@@ -93,7 +93,7 @@ This header is just a sequence of bytes that denotes the `signature`, `size`, tw
 
 This header denotes the `dib_header_size`, `width`, `height`, `bits_per_pixel` (this is the bit depth btw) of the image, as well as some other values that I didn't use or really care about:
 
-    #!python
+    :::python
     #... continues from code above
         # Parses the DIB header section
         dib_header_size = int.from_bytes(f.read(4), 'little')
@@ -112,7 +112,7 @@ This header denotes the `dib_header_size`, `width`, `height`, `bits_per_pixel` (
 
 Finally! The moment I had waited for had arrived! I wrote a nested loop to print out some ANSI-colored characters for the height and width of the image, and was ready to behold the fruits of my labor!
 
-    #!python
+    :::python
     # Moves file pointer to the beginning of the image data
 	f.seek(image_start)
 
@@ -124,7 +124,7 @@ Finally! The moment I had waited for had arrived! I wrote a nested loop to print
             red = int.from_bytes(f.read(1))
 
             print(f"\u001B[38;2;{red};{green};{blue}m", end='')
-            print("$", end='')
+            print(".", end='')
             print("\u001B[0m", end='')
 
         print()
@@ -151,19 +151,19 @@ I decided to introduce a dependency to my program in the form of [FFmpeg](https:
 
 Some Google searches later, and I settled on this command to downscale the image and save the new image as a temporary file:
 
-    #!bash
+    :::bash
     ffmpeg -i {input_image} -vf scale={width}:{height} {temporary_image}
 
 All I had to do was pass in the dimensions of the currently active terminal to the command. Python makes it trivial:
 
-    #!python
+    :::python
     import os
 
     cols, rows = os.get_terminal_size()
 
 From this point, it was simply a matter of running the command in Python. Once again, trivial:
 
-    #!python
+    :::python
     import subprocess
 
     subprocess.run(
@@ -173,7 +173,7 @@ From this point, it was simply a matter of running the command in Python. Once a
 
 Finally, I just had to switch out the file being read from to the temporary file, so it could read with the proper dimensions:
 
-    #!python
+    :::python
     with open(temp-{input_image}, 'rb') as f:
         #... other code remains the same
 
@@ -185,7 +185,7 @@ There was some ghost of the image in there, yes. But, it was upside down.
 
 I vividly remember this part of the project. I remember it, because this is when I, in my sleep-deprived irritable state, threw the code into the nearest LLM I could find with a prompt to rotate the image for me. Here's the code it returned, for those who wish to use it. It even solved a potential problem I had yet to encounter, lol:
 
-    #!python
+    :::python
     # Calculate row size and padding
     row_size = ((bits_per_pixel * width + 31) // 32) * 4
     padding = row_size - (width * 3)
