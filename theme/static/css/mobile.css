@@ -77,7 +77,7 @@
     }
 
     pre {
-        width: 100%; /* Make the code block full width */
-        overflow-x: scroll; /* Add horizontal scrolling if needed */
+        width: auto;
+        overflow-x: auto; /* Add horizontal scrolling if needed */
     }
 }

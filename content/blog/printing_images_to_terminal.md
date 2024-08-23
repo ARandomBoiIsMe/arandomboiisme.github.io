@@ -18,7 +18,7 @@ Unless your terminal supports implicit image parsing (new project idea?), the im
 Like this:
 ![alt text]({static}/images/garbage_image_text.png)
 
-In order to understand how to deal with with this data properly, I had to start by knowing what it even was.
+In order to understand how to deal with this data properly, I had to start by knowing what it even was.
 
 ## It's all just ones and zeroes
 

@@ -8,25 +8,29 @@ pre {
     position: relative;
     color: #d4d2c8;
     padding-right: 70px;  /* Make room for the copy button */
-    width: 100%;
+    width: auto;
+    overflow-x: auto;
 }
 
-  /* Add a "Copy" button */
-  pre::after {
-    content: "Copy";
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    padding: 3px 10px;
-    background-color: #3c4354;
-    border: 1px solid #5ccfe6;
-    border-radius: 3px;
-    font-size: 12px;
-    cursor: pointer;
-    color: #d4d2c8;
-    width: 50px;  /* Set a fixed width */
-    text-align: center;  /* Center the text */
-  }
+  /* Add a clipboard icon button */
+pre::after {
+  content: "Copy";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  padding: 3px 10px;
+  background-color: #3c4354;
+  border: 1px solid #5ccfe6;
+  border-radius: 3px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #d4d2c8;
+  width: 20px; /* Adjust the width as needed */
+  height: 20px; /* Adjust the height as needed */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
   /* Style for the button on hover */
   pre:hover::after {
