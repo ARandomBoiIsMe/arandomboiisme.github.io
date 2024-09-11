@@ -5,6 +5,13 @@ Status: draft
 Category: projects
 tldr: Project stuff
 
+### ANSInema
+I was curious about media players, so I decided to make one in the terminal. 
+
+[GitHub Link](https://github.com/ARandomBoiIsMe/ANSInema)
+
+---
+
 ### AzuracastPy
 An open source Python API Wrapper I made for a self-hosted online radio service.
 
