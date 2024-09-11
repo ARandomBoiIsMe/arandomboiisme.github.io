@@ -183,7 +183,7 @@ And boom! I ran the code! And-!
 
 There was some ghost of the image in there, yes. But, it was upside down.
 
-I vividly remember this part of the project. I remember it, because this is when I, in my sleep-deprived irritable state, threw the code into the nearest LLM I could find with a prompt to rotate the image for me. Here's the code it returned, for those who wish to use it. It even solved a potential problem I had yet to encounter, lol:
+I vividly remember this part of the project. I remember it because this is when I, in my sleep-deprived irritable state, threw the code into the nearest LLM I could find with a prompt to rotate the image for me. Here's the code it returned, for those who wish to use it. It even solved a potential problem I had yet to encounter, lol:
 
     :::python
     # Calculate row size and padding
