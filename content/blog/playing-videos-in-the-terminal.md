@@ -294,7 +294,7 @@ Basically, instead of clearing the entire terminal and printing out a new frame,
 This does two things:
 
 - Allows you to overwrite the old frame data.
-- Prevents the need for clearing the screen.
+- Removes the need for clearing the screen.
 
 So you get a video frame that's updated instanteneously, and in the same place. No scrolling. No screen clearing. No _flickering._
 
@@ -417,7 +417,7 @@ From here, I had to rewrite my `_print` function to read from a stream instead o
 
 And... that was it. I had successfully removed the need for video frame storage, and optimized my program to directly process the streamed frame data.
 
-As a plus, I didn't even have to use multithreading anymore, since the program could now process all the frames in a single frame.
+As a plus, I didn't even have to use multithreading anymore, since the program could now process all the frames in a single thread.
 
     :::python
     if __name__ == '__main__':
