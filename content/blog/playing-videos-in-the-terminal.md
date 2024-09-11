@@ -310,7 +310,7 @@ I updated my code to include this.
         # instead of clearing the entire terminal
         print("\033[H", end="")
 
-The results of using these two techniques in the code are, for lack of better word, glorious:
+The results of using these two techniques in the code are, for lack of a better word, glorious:
 
 <div style="position:relative; width:100%; height:0px; padding-bottom:56.250%"><iframe allow="fullscreen;autoplay" allowfullscreen height="100%" src="https://streamable.com/e/mdlmnx?autoplay=1&muted=1&nocontrols=1" width="100%" style="border:none; width:100%; height:100%; position:absolute; left:0px; top:0px; overflow:hidden;"></iframe></div>
 
@@ -326,7 +326,7 @@ No? Really? What about this line then:
 
 I'm sure this caused some headaches.
 
-In any case, I was well aware of the inefficient approaches depicted in those statements. Since I had a working video player, there was no need to keep them in there. So my next optimization was streaming the generated frames directly into the program for immediate use.
+In any case, I was well aware of the inefficient approaches depicted in those statements. Since I had succeeded in creating a working video player, there was no need to keep them in there. So my next optimization was streaming the generated frames directly into the program for immediate use.
 
 ### We don't need the folder
 
@@ -342,7 +342,7 @@ The image below shows just the beginning frames of the video being played. The n
 The solution here was to delete the second half of the frame generation command. I renamed the `generate_video_frames` function to `process_video_frames`, just for consistency.
 
     :::python
-    def generate_video_frames():
+    def process_video_frames():
         cols, rows = os.get_terminal_size()
 
         command = [
@@ -370,7 +370,7 @@ This part was daunting, but I wouldn't be writing this blog post if I didn't fig
 The first step was to point the output stream to a handler that I could access from my code. This would mean setting the `stdout` argument to the `subprocess.PIPE` object. I then had to save the running process into a variable I could access.
 
     :::python
-    def generate_video_frames():
+    def process_video_frames():
         cols, rows = os.get_terminal_size()
 
         command = [
@@ -388,10 +388,10 @@ The first step was to point the output stream to a handler that I could access f
             stderr=subprocess.DEVNULL
         )
 
-I then had to read the command's output in a loop until it had no more frames to give me, after which I would clear the terminal and exit the program. My knowledge of `bmp` parsing came in handy here.
+I then had to read the command's output in a loop until it had no more frames to give me, after which I could clear the terminal and exit the program. My knowledge of `bmp` format parsing came in handy here.
 
     :::python
-    def generate_video_frames():
+    def process_video_frames():
         # Everything stays the same...
 
         while True:
