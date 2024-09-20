@@ -18,7 +18,7 @@ I was wrong. I was very wrong.
 
 I feel the need to admit the fact that video files are more complex than I initially thought them to be.
 
-As a result, a huge part of my time on this project was spent just _trying_ to understand the [specifications of an MP4 file](https://b.goeswhere.com/ISO_IEC_14496-12_2015.pdf). Try your luck. Hopefully you get farther than I did.
+As a result, a huge part of my time on this project was spent just _trying_ to understand the [specifications of an MP4 file](https://b.goeswhere.com/ISO_IEC_14496-12_2015.pdf). Try your luck. Hopefully you get further than I did.
 
 I expected to find some chunk of bytes that directly translated to each frame in a video, which I would then take and decode in a loop.
 
@@ -81,12 +81,12 @@ Unlike with the image project, I had no reservations about using FFmpeg this tim
 
 The idea was to use FFmpeg to split up a video into a bunch of image frames, which I could then parse by hand. I managed to string two commands together to achieve this.
 
-The first command takes a video and splits it up into image data and sends the data out as an output stream:
+The first command takes a video, splits it up into image data and sends the data out as an output stream:
 
     :::bash
     ffmpeg -i <video_file_path> -f image2pipe -vcodec bmp -
 
-The second command takes in a stream of image data and saves them to an image file that's been scaled to certain dimensions:
+The second command takes in a stream of image data and saves it to an image file that's been scaled to certain dimensions:
 
     :::bash
     ffmpeg -y -f image2pipe -vcodec bmp -i - -vf "scale=<width>:<height>" frame%04d.bmp
@@ -240,9 +240,9 @@ There was a lot to improve, so I started with the most obvious.
 
 ## Optimization #1 - Getting rid of the flickering
 
-My limited knowledge of rendering led me to believe that the flickering was unavoidable because the image had to be redrawn each frame.
+My limited knowledge of rendering led me to believe that the flickering was unavoidable because an image had to be drawn for each frame.
 
-What I didn't know was that the above statement was only partially true. Yes, the frames have to be redrawn so you can get that feeling of a moving video. But, there are more efficient ways of drawing frames in quick succession. The solution I ended up with used a mixture of two techniques I found online.
+What I didn't know was that the above statement was only partially true. Yes, the frames have to be drawn in sequence so you can get that feeling of a moving video. But, there are more efficient ways of drawing frames in quick succession. The solution I ended up with used a mixture of two techniques I found online.
 
 ### Double Buffering
 
@@ -335,7 +335,7 @@ The folder served as a store for the generated video frames. But there were two 
 - Saving generated images adds a lot of overhead to the program, leading to slow/laggy video playback.
 - The folders got big. Fast.
 
-The image below shows just the beginning frames of the video being played. The number gets higher as the program runs, until all frames have been generated and the program can consume them at a steady rate.
+The image below shows just the beginning frames of the video being played. The number frames being stored increases as the program runs, until all frames have been generated and the program can consume them at a steady rate.
 
 ![A bunch of frames]({static}/images/frame_folder.png)
 
@@ -388,7 +388,7 @@ The first step was to point the output stream to a handler that I could access f
             stderr=subprocess.DEVNULL
         )
 
-I then had to read the command's output in a loop until it had no more frames to give me, after which I could clear the terminal and exit the program. My knowledge of `bmp` format parsing came in handy here.
+Next, I had to read the command's output in a loop until it had no more frames to give me, after which I could clear the terminal and exit the program. My knowledge of `bmp` format parsing came in handy here.
 
     :::python
     def process_video_frames():
@@ -415,7 +415,7 @@ From here, I had to rewrite my `_print` function to read from a stream instead o
 
         # Everything else stays the same...
 
-And... that was it. I had successfully removed the need for video frame storage, and optimized my program to directly process the streamed frame data.
+And... that was it. I had successfully removed the need for video frame storage, and optimized my program to directly process the streamed video data instead.
 
 As a plus, I didn't even have to use multithreading anymore, since the program could now process all the frames in a single thread.
 
@@ -430,5 +430,7 @@ I _would_ show you, but I think it's better if you try it out yourself.
 You can get it from [here](https://github.com/ARandomBoiIsMe/ANSInema). Forgive the terrible name.
 
 Oh yeah, as a bonus, [I got it to play Bad Apple](https://x.com/arandomboiisme/status/1833553582013972849) :)
+
+I'm working on adding support for video calls. Yeah, in the terminal. That'll probably be another blog post.
 
 That's all for now. Until next time, thanks for reading!
