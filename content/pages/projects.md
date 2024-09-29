@@ -5,10 +5,19 @@ Status: draft
 Category: projects
 tldr: Project stuff
 
-### ANSInema
-I was curious about media players, so I decided to make one in the terminal. 
+### clipshare
+Trying to share data between my laptop and phone quickly became too annoying of a task for
+WhatsApp/Telegram. So, I made a little program to automatically update the clipboard on a device
+with data that was copied from another. Cool stuff.
 
-[GitHub Link](https://github.com/ARandomBoiIsMe/ANSInema)
+[GitHub Link](https://github.com/ARandomBoiIsMe/clipshare)
+
+---
+
+### ansinema
+I was curious about media players, so I decided to make one in the terminal.
+
+[GitHub Link](https://github.com/ARandomBoiIsMe/ansinema)
 
 ---
 
