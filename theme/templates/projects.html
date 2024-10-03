@@ -1,16 +1,20 @@
 {% extends "base.html" %}
-{% block bigtitle %}Projects - {{ SITENAME }}{% endblock %}
+
+{% block bigtitle %}
+    Projects - {{ SITENAME }}
+{% endblock %}
+
 {% block content %}
 
 <div class="page-section">
     <h2>Projects</h2>
     <dl>
         {% for article in draft_pages %}
-        {% if article.category == "projects" %}
-        <div>
-            {{ article.content }}
-        </div>
-        {% endif %}
+            {% if article.category == "projects" %}
+            <div>
+                {{ article.content }}
+            </div>
+            {% endif %}
         {% endfor %}
     </dl>
 </div>
