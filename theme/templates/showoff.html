@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block bigtitle %}
+    Showoff - {{ SITENAME }}
+{% endblock %}
+
+{% block content %}
+
+<div class="page-section">
+    <h2>Showoff</h2>
+
+    <p>Sometimes, I try to draw.</p>
+
+    <div class="masonry-grid">
+        <dl>
+            {% for article in articles %}
+                {% if article.category == "showoff" %}
+                <div class="masonry-item">
+                    {{ article.content }}
+                </div>
+                {% endif %}
+            {% endfor %}
+
+            <div class="lightbox" id="lightbox">
+                <img src="" alt="Fullscreen image" id="lightbox-img">
+            </div>
+        </dl>
+    </div>
+
+</div>
+
+{% endblock %}
