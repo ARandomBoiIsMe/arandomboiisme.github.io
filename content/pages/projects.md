@@ -6,10 +6,9 @@ Category: projects
 tldr: Project stuff
 
 ### [Tweet Patrol](https://arandomboiisme.github.io/tweetpatrol/)
-Art theft is a serious/annoying issue for most creative accounts on social media, so I made a browser extension to help fight against it. Tweet Patrol allows creators to upload their content to be tracked across the site by
+Art theft is a serious/annoying issue for most creative accounts on social media, so I made a browser extension to help fight against it. Tweet Patrol allows creators to upload their content to be tracked across X / Twitter by
 other users, alerting them of unauthorized reposts from shameless thieves.
 
-![alt]({static}/images/addtolibrarywithhover.png)
 ![alt]({static}/images/stolenimage.png)
 
 ---
