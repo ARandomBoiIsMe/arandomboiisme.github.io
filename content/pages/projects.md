@@ -5,6 +5,15 @@ Status: draft
 Category: projects
 tldr: Project stuff
 
+### [Tweet Patrol](https://arandomboiisme.github.io/tweetpatrol/)
+Art theft is a serious/annoying issue for most creative accounts on social media, so I made a browser extension to help fight against it. Tweet Patrol allows creators to upload their content to be tracked across the site by
+other users, alerting them of unauthorized reposts from shameless thieves.
+
+![alt]({static}/images/addtolibrarywithhover.png)
+![alt]({static}/images/stolenimage.png)
+
+---
+
 ### [clipshare](https://github.com/ARandomBoiIsMe/clipshare)
 Using WhatsApp to share data between my laptop and phone quickly became annoying, so I made a little program to make the sharing process more convenient for me. It automatically saves shared text to the devices' clipboard. Cool stuff.
 
