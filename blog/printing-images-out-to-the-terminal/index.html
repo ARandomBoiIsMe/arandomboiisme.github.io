@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+ <title></title>
+
+ <link rel="stylesheet" href="/theme/css/main.css">
+ <link rel="stylesheet" href="/theme/css/lightbulb.css"/>
+ <link rel="stylesheet" href="/theme/css/mobile.css"/>
+
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <meta name="google-site-verification" content="W_ikUYyHjJP1Uc0A-Bdt7VqWVpceqMdbZ3EX4b2mm1w" />
+
+</head>
+<body>
+    <div class="container">
+
+<div class="container-nav">
+  <nav class="navbar">
+    <div class="container-nav">
+      <ul class="navbar-list">
+        <li class="navbar-item"><a class="navbar-link" href="/">Home</a></li>
+        <li class="navbar-item"><a class="navbar-link" href="/projects/">Projects</a></li>
+        <li class="navbar-item"><a class="navbar-link" href="/blog/">Blog</a></li>
+        <li class="navbar-item"><a class="navbar-link" href="/showoff/">Showoff</a></li>
+      </ul>
+    </div>
+  </nav>
+</div>
+      <section class="header">
+        <h2><a class="title-link" href="/">arandomboiisme.github.io</a></h2>
+      </section>
+
+<div class="page-section">
+    <div class="row">
+        <div><a href="/blog/printing-images-out-to-the-terminal/">Printing images out to the terminal</a></div>
+        <div>Wed 14 August 2024</div>
+    </div>
+    <div class="article-content">
+        <div class="highlight"><pre><span></span><code>$<span class="w"> </span>cat<span class="w"> </span>image.bmp
+</code></pre></div>
+
+<p>That's literally it. Bye.</p>
+<h2>If only it were that simple</h2>
+<p>Before I decided to embark on this short-yet-fun adventure, I had the questionable assumption that images were just a bunch of data (true) that could be directly printed out to the terminal (sadly, untrue).</p>
+<p>Unless your terminal supports implicit image parsing (new project idea?), the image data is just gonna be dumped as a bunch of meaningless text that you'll have no idea what to do with.</p>
+<p>Like this:
+<img alt="alt text" src="/images/garbage_image_text.png"></p>
+<p>In order to understand how to deal with this data properly, I had to start by knowing what it even was.</p>
+<h2>It's all just ones and zeroes</h2>
+<p>I'm sure you've heard this a thousand times by now.</p>
+<p><code>Your computer only understands zeroes and ones</code></p>
+<p>Likewise. But, it didn't really click until I decided to start this project. <strong>Everything</strong> running in your computer can be broken down to bits in some way. It's all just a matter of what standard was used to encode it.</p>
+<p>I'll use a simple bitmap image to illustrate my point.
+<img alt="Thank you CS50" src="/images/bitmap_smile.png"></p>
+<p>As shown above, a bitmap image is just a one-to-one mapping of bits to form some sort of picture.</p>
+<p>All image formats follow this idea of mapping bits to represent a picture in some way, although most formats nowadays employ more complex encodings to allow for things like compression, colors, etc.</p>
+<p>The story isn't different here, either. All that gibberish from before was a bunch of binary that my terminal couldn't decode in a sensible way.</p>
+<h2>Nice epiphany. What's next?</h2>
+<p>Now, we decode.</p>
+<p>At the time of writing, my approach only works on bitmap (.bmp) images.</p>
+<p>The reason is simple: Bitmap images were the most straightforward image format I could find.</p>
+<p>Unlike its counterparts, bitmaps are barely (if at all) compressed. This means that their image data is relatively straightforward to read. Unfortunately, this also results in large file sizes for images stored in this format. As a result, they aren't as common as something like JPEG, which is <a href="https://www.baeldung.com/cs/jpeg-compression">compressed with almost five algorithms back-to-back</a>.</p>
+<p>I'm not gonna stop at bitmaps though. I'll update the post as I learn more about image formats and their decoding processes. So, uh, stay tuned? Idk.</p>
+<h3>Bitmap images</h3>
+<p>So, the plan here was to read the bytes associated with pixel data of the image, and then use <a href="https://www.youtube.com/watch?v=yQ9Ns6Z4Q-s&amp;t=101s">ANSI escape codes</a> to print out text that has been colored with the pixel data to the terminal.</p>
+<p>This is the image I used for this project
+<img alt="Getting this image was so stressful goddamn" src="/images/480-360-sample.bmp"></p>
+<p>You might be confused about the sudden leap from a black-and-white bitmap image to this beautiful combination of colors. There's no way they're both bitmap images, right?</p>
+<p>Well, they are! Remember when I said that some formats can choose to use more complex encodings to allow for coloring? This is an example of such a case.</p>
+<p>The factor that decides this quality in an image is called its <a href="https://www.minitool.com/lib/bit-depth.html">bit depth</a>. It's essentially how many bits are used to represent the smallest unit in some sort of data. In this case, it refers to how many bits are used to store the color information of a single pixel in the image.</p>
+<p>The bit depth for this particular image is 24 bits. More on how I arrived at that number later. This means that each pixel of this image is comprised of 24 bits (or 3 bytes). In this case, each byte is used to store one part of a pixel's <a href="https://en.wikipedia.org/wiki/RGB_color_model">RGB</a> data.</p>
+<p>Okay, decoding time!</p>
+<p>To know how to decode it, I needed to understand exactly how it was structured. Thankfully, <a href="https://en.wikipedia.org/wiki/BMP_file_format">Wikipedia came in clutch</a>.</p>
+<p>According to them, bitmap files are structured like so:</p>
+<ul>
+<li>BMP header</li>
+<li>DIB header</li>
+<li>Pixel data</li>
+</ul>
+<p>The fact that there are two headers really threw me off, especially since the second one is so dependent on what device you're working on, but I got used to it eventually. Also, all the bytes except those of the <code>signature</code> had to be read in <a href="https://youtu.be/LxvFb63OOs8">little endian</a> form.</p>
+<h4>BMP Header</h4>
+<p>This header is just a sequence of bytes that denotes the <code>signature</code>, <code>size</code>, two reserved and generally unused bits, and the <code>image_start</code> offset of the pixel data's location. I had to follow a <a href="https://youtu.be/VBY_UEiw9F8">pretty nice video</a> to understand how to correctly read the bytes, since this was my first time doing anything of the sort. I ended up with this for parsing the BMP header bytes:</p>
+<div class="highlight"><pre><span></span><code><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;480-360-sample.bmp&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="c1"># Parses the BMP file header</span>
+    <span class="n">signature</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+    <span class="n">reserved_1</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+    <span class="n">reserved_2</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+    <span class="n">image_start</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+</code></pre></div>
+
+<h4>DIB Header</h4>
+<p>This header denotes the <code>dib_header_size</code>, <code>width</code>, <code>height</code>, <code>bits_per_pixel</code> (this is the bit depth btw) of the image, as well as some other values that I didn't use or really care about:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#... continues from code above</span>
+    <span class="c1"># Parses the DIB header section</span>
+    <span class="n">dib_header_size</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+    <span class="n">color_planes</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+    <span class="n">bits_per_pixel</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+    <span class="n">compression_method</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+    <span class="n">image_size</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+    <span class="n">horizontal_resolution</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+    <span class="n">vertical_resolution</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+    <span class="n">colors_in_color_palette</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+    <span class="n">important_colors</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+</code></pre></div>
+
+<h4>PIXEL DATA!</h4>
+<p>Finally! The moment I had waited for had arrived! I wrote a nested loop to print out some ANSI-colored characters for the height and width of the image, and was ready to behold the fruits of my labor!</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Moves file pointer to the beginning of the image data</span>
+<span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">image_start</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">height</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">width</span><span class="p">):</span>
+        <span class="c1"># Little endian means that RGB is now BGR</span>
+        <span class="n">blue</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">green</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">red</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\u001B</span><span class="s2">[38;2;</span><span class="si">{</span><span class="n">red</span><span class="si">}</span><span class="s2">;</span><span class="si">{</span><span class="n">green</span><span class="si">}</span><span class="s2">;</span><span class="si">{</span><span class="n">blue</span><span class="si">}</span><span class="s2">m&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\u001B</span><span class="s2">[0m&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">()</span>
+</code></pre></div>
+
+<p>And I got-!</p>
+<p><img alt="Image was too big to fit in the terminal" src="/images/failed_ansi_art_1.png"></p>
+<p>...what?</p>
+<h4>What happened?</h4>
+<p>Well, if it wasn't clear, the image was simply too big for the terminal window to display it properly.</p>
+<p>Not gonna lie, I almost gave up here. I wasn't in any mood to figure out how to downscale images from scratch, so I had the thought of just stopping here and moving on with my life.</p>
+<p>That is, until I stumbled across-</p>
+<h4>FFmpeg</h4>
+<p>Some may call it cheating. I call it <code>using the right tool for the job</code> (it's cheating bro).</p>
+<p>I decided to introduce a dependency to my program in the form of <a href="https://ffmpeg.org/">FFmpeg</a>, a tool for working with media files. Wasn't really happy with that, but what else could I do that didn't involve me losing my mind?</p>
+<p>Some Google searches later, and I settled on this command to downscale the image and save the new image as a temporary file:</p>
+<div class="highlight"><pre><span></span><code>ffmpeg<span class="w"> </span>-i<span class="w"> </span><span class="o">{</span>input_image<span class="o">}</span><span class="w"> </span>-vf<span class="w"> </span><span class="nv">scale</span><span class="o">={</span>width<span class="o">}</span>:<span class="o">{</span>height<span class="o">}</span><span class="w"> </span><span class="o">{</span>temporary_image<span class="o">}</span>
+</code></pre></div>
+
+<p>All I had to do was pass in the dimensions of the currently active terminal to the command. Python makes it trivial:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">os</span>
+
+<span class="n">cols</span><span class="p">,</span> <span class="n">rows</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">get_terminal_size</span><span class="p">()</span>
+</code></pre></div>
+
+<p>From this point, it was simply a matter of running the command in Python. Once again, trivial:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">subprocess</span>
+
+<span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+    <span class="p">[</span><span class="s1">&#39;ffmpeg&#39;</span><span class="p">,</span> <span class="s1">&#39;-i&#39;</span><span class="p">,</span> <span class="n">input_image</span><span class="p">,</span> <span class="s1">&#39;-vf&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;scale=</span><span class="si">{</span><span class="n">cols</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">rows</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;temp-</span><span class="si">{</span><span class="n">input_image</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">],</span>
+    <span class="n">shell</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>Finally, I just had to switch out the file being read from to the temporary file, so it could read with the proper dimensions:</p>
+<div class="highlight"><pre><span></span><code><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp</span><span class="o">-</span><span class="p">{</span><span class="n">input_image</span><span class="p">},</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="c1">#... other code remains the same</span>
+</code></pre></div>
+
+<p>And boom! I ran the code! And-!</p>
+<p><img alt="Upside Down Art" src="/images/upside_down_art.png"></p>
+<p>There was some ghost of the image in there, yes. But, it was upside down.</p>
+<p>I vividly remember this part of the project. I remember it because this is when I, in my sleep-deprived irritable state, threw the code into the nearest LLM I could find with a prompt to rotate the image for me. Here's the code it returned, for those who wish to use it. It even solved a potential problem I had yet to encounter, lol:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Calculate row size and padding</span>
+<span class="n">row_size</span> <span class="o">=</span> <span class="p">((</span><span class="n">bits_per_pixel</span> <span class="o">*</span> <span class="n">width</span> <span class="o">+</span> <span class="mi">31</span><span class="p">)</span> <span class="o">//</span> <span class="mi">32</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span>
+<span class="n">padding</span> <span class="o">=</span> <span class="n">row_size</span> <span class="o">-</span> <span class="p">(</span><span class="n">width</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">height</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="c1"># Move file pointer to the start of the current row</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">image_start</span> <span class="o">+</span> <span class="n">y</span> <span class="o">*</span> <span class="n">row_size</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">width</span><span class="p">):</span>
+        <span class="c1"># Little endian means that RGB is now BGR</span>
+        <span class="n">blue</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+        <span class="n">green</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+        <span class="n">red</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\u001B</span><span class="s2">[38;2;</span><span class="si">{</span><span class="n">red</span><span class="si">}</span><span class="s2">;</span><span class="si">{</span><span class="n">green</span><span class="si">}</span><span class="s2">;</span><span class="si">{</span><span class="n">blue</span><span class="si">}</span><span class="s2">m&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\u001B</span><span class="s2">[0m&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">()</span>
+</code></pre></div>
+
+<p>And, finally, I got what I was looking for. You might have to zoom in a bit if you're seeing dark patches. Sorry.</p>
+<p><img alt="alt text" src="/images/correct_art_1.png"></p>
+<p>It looks even better when I've zoomed all the way out on my terminal before running it.</p>
+<p><img alt="alt text" src="/images/correct_art_2.png"></p>
+<p>At this point, I felt confident enough to post it to two <a href="https://discord.gg/x4bs2mGbrC">Discord</a> <a href="https://discord.gg/hxWxDee">servers</a> I'm on, and I got nice feedback. I also got a lot of suggestions to use <a href="https://home.unicode.org/">Unicode</a> block characters (<a href="https://www.compart.com/en/unicode/U+2588">U+2588</a>) for the image generation to make it look more natural.</p>
+<p>They were so damn right.</p>
+<p><img alt="alt text" src="/images/correct_art_3.png"></p>
+<p>It looks more like a pixelated image than a sequence of colored characters. This is much easily noticeable at smaller terminal window sizes.</p>
+<h3>More formats soon</h3>
+<p>I hope to update this blog with my experience of decoding and printing out other images formats to my terminal, eventually. Until then, thanks for reading!</p>
+    </div>
+</div>
+
+    </div>
+
+    <script src="/theme/js/showoff.js"></script>
+
+    <footer>
+
+<div class="footer">
+    <p >
+        <br>
+        Proudly made with
+        <a href="https://getpelican.com/">Pelican</a>;
+    </p>
+
+    <p >
+        <br>
+        Inspired by
+        <a href="https://vlimki.dev/">vlimki.dev</a> and
+        <a href="https://gurudas.dev/">gurudas.dev</a>;
+    </p>
+</div>
+    </footer>
+</body>
+</html>

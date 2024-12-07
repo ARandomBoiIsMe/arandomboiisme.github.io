@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+ <title></title>
+
+ <link rel="stylesheet" href="/theme/css/main.css">
+ <link rel="stylesheet" href="/theme/css/lightbulb.css"/>
+ <link rel="stylesheet" href="/theme/css/mobile.css"/>
+
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <meta name="google-site-verification" content="W_ikUYyHjJP1Uc0A-Bdt7VqWVpceqMdbZ3EX4b2mm1w" />
+
+</head>
+<body>
+    <div class="container">
+
+<div class="container-nav">
+  <nav class="navbar">
+    <div class="container-nav">
+      <ul class="navbar-list">
+        <li class="navbar-item"><a class="navbar-link" href="/">Home</a></li>
+        <li class="navbar-item"><a class="navbar-link" href="/projects/">Projects</a></li>
+        <li class="navbar-item"><a class="navbar-link" href="/blog/">Blog</a></li>
+        <li class="navbar-item"><a class="navbar-link" href="/showoff/">Showoff</a></li>
+      </ul>
+    </div>
+  </nav>
+</div>
+      <section class="header">
+        <h2><a class="title-link" href="/">arandomboiisme.github.io</a></h2>
+      </section>
+
+<div class="page-section">
+    <div class="row">
+        <div><a href="/blog/playing-videos-in-the-terminal/">Playing videos in the terminal</a></div>
+        <div>Wed 11 September 2024</div>
+    </div>
+    <div class="article-content">
+        <p>Welcome to the (hopefully) long-awaited sequel to my <a href="https://arandomboiisme.github.io/blog/printing-images-out-to-the-terminal/">previous post</a>.</p>
+<p>As the title suggests, this post will be a breakdown of how I got videos to play on my terminal.</p>
+<p>Let's go.</p>
+<h1>My Initial Approach</h1>
+<p>Following the success of printing images to the terminal, I decided to repeat the process with video files. After all, they're just a "sequence of images", right?</p>
+<p>I was wrong. I was very wrong.</p>
+<p>I feel the need to admit the fact that video files are more complex than I initially thought them to be.</p>
+<p>As a result, a huge part of my time on this project was spent just <em>trying</em> to understand the <a href="https://b.goeswhere.com/ISO_IEC_14496-12_2015.pdf">specifications of an MP4 file</a>. Try your luck. Hopefully you get further than I did.</p>
+<p>I expected to find some chunk of bytes that directly translated to each frame in a video, which I would then take and decode in a loop.</p>
+<p>What I found instead, was a file structure that just confused the hell out of me.</p>
+<h2>A Brief Video File Lesson</h2>
+<p>From my potentially traumatic research into video files, I learnt that they're split up into two parts</p>
+<h3>Codec</h3>
+<p>The standard used to encode and decode the data that's stored in the file. Various codecs exist for <a href="https://en.wikipedia.org/wiki/Video_codec">video</a> and <a href="https://en.wikipedia.org/wiki/Audio_codec">audio</a> data seperately. When this data is encoded, it needs to be stored somewhere so it can be extracted and decoded for playback or editing.</p>
+<h3>Container</h3>
+<p>The structure that stores all the pieces of data contained in a video file. This is what is actually being referred to when we mention a video file's format/extension. <code>MP4</code>, <code>MOV</code>, <code>MKV</code>, and others, are just different container types that are perfectly capable of storing data that has been encoded with various codecs. But, of course, some formats are designed to only store data that's encoded with specific codecs. Monopoly and all that.</p>
+<p>If you're confused, don't worry, so am I. <a href="https://www.youtube.com/watch?v=-4NXxY4maYc">This video</a> clears things up a bit. I had to rewatch it a few times though.</p>
+<h2>My Attempt At Decoding Video Data</h2>
+<p>Following the document I linked earlier, I tried <em>really</em> hard to just extract the video stream and be on my way. I focused on <code>MP4</code> files because of how common they are.</p>
+<p><code>MP4</code> containers store their data in the form of <a href="https://dev.to/alfg/a-quick-dive-into-mp4-57fo">boxes/atoms</a>. These boxes are split into <code>size</code>, <code>name</code> and <code>data</code>. Using this information, alongside a lot of reading, I managed to put together a little script to list all the boxes in an <code>MP4</code> file.</p>
+<div class="highlight"><pre><span></span><code><span class="n">video</span> <span class="o">=</span> <span class="s2">&quot;videoplayback.mp4&quot;</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">video</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">box_size</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+        <span class="n">box_name</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">box_name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">break</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Box name: </span><span class="si">{</span><span class="n">box_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">box_size</span> <span class="o">+</span> <span class="n">size</span><span class="p">)</span>
+
+        <span class="n">size</span> <span class="o">+=</span> <span class="n">box_size</span>
+        <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+</code></pre></div>
+
+<p>From here, it was an uphill battle. The constant back-and-forth between my code and the specification document slowly made it very apparent to me that this was not something I wanted to embark on. Not now, at least.</p>
+<p>The reason is quite simple: <strong>The parsing process is too damn stressful.</strong></p>
+<p>After the fifth day in a row of coming back home and trying to understand the structure so I could get closer to the video data somehow, I realized I wasn't built for this.</p>
+<p>I'm sure that, with <em>a lot</em> of time, I would've found those video frame bytes somewhere if I kept looking, but I was so tired of staring at that file that I quickly started to look for alternatives.</p>
+<p>Thankfully, I didn't have to look for long.</p>
+<h1>FFmpeg, again</h1>
+<p>Unlike with the image project, I had no reservations about using FFmpeg this time. After all, it's already a dependency in the program, so it only makes sense to take full advantage of it. Especially in this time of need.</p>
+<p>The idea was to use FFmpeg to split up a video into a bunch of image frames, which I could then parse by hand. I managed to string two commands together to achieve this.</p>
+<p>The first command takes a video, splits it up into image data and sends the data out as an output stream:</p>
+<div class="highlight"><pre><span></span><code>ffmpeg<span class="w"> </span>-i<span class="w"> </span>&lt;video_file_path&gt;<span class="w"> </span>-f<span class="w"> </span>image2pipe<span class="w"> </span>-vcodec<span class="w"> </span>bmp<span class="w"> </span>-
+</code></pre></div>
+
+<p>The second command takes in a stream of image data and saves it to an image file that's been scaled to certain dimensions:</p>
+<div class="highlight"><pre><span></span><code>ffmpeg<span class="w"> </span>-y<span class="w"> </span>-f<span class="w"> </span>image2pipe<span class="w"> </span>-vcodec<span class="w"> </span>bmp<span class="w"> </span>-i<span class="w"> </span>-<span class="w"> </span>-vf<span class="w"> </span><span class="s2">&quot;scale=&lt;width&gt;:&lt;height&gt;&quot;</span><span class="w"> </span>frame%04d.bmp
+</code></pre></div>
+
+<p>I decided to use the <code>bmp</code> image file format since I already had some experience with parsing it.</p>
+<p>The full command pipes the output of the first into the input of the second:</p>
+<div class="highlight"><pre><span></span><code>ffmpeg<span class="w"> </span>-i<span class="w"> </span>&lt;video_file_path&gt;<span class="w"> </span>-f<span class="w"> </span>image2pipe<span class="w"> </span>-vcodec<span class="w"> </span>bmp<span class="w"> </span>-<span class="w"> </span><span class="p">|</span><span class="w"> </span>ffmpeg<span class="w"> </span>-y<span class="w"> </span>-f<span class="w"> </span>image2pipe<span class="w"> </span>-vcodec<span class="w"> </span>bmp<span class="w"> </span>-i<span class="w"> </span>-<span class="w"> </span>-vf<span class="w"> </span><span class="s2">&quot;scale=&lt;width&gt;:&lt;height&gt;&quot;</span><span class="w"> </span>frame%04d.bmp
+</code></pre></div>
+
+<p>After ensuring the command worked as expected, I started to write the code for video processing, starting with executing the command in Python. I made sure to save the generated frames to a folder with the same name as the video file, just to make things easier to track.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+
+<span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;videoplayback.mp4&quot;</span>
+<span class="n">dirname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">file_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">print_char</span> <span class="o">=</span> <span class="s1">&#39;█&#39;</span>
+
+<span class="k">def</span> <span class="nf">create_video_frames_dir</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">FileExistsError</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+<span class="k">def</span> <span class="nf">generate_video_frames</span><span class="p">():</span>
+    <span class="n">cols</span><span class="p">,</span> <span class="n">rows</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">get_terminal_size</span><span class="p">()</span>
+    <span class="n">create_video_frames_dir</span><span class="p">()</span>
+
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="s2">&quot;ffmpeg&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span>
+            <span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="s2">&quot;image2pipe&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-vcodec&quot;</span><span class="p">,</span> <span class="s2">&quot;bmp&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;|&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ffmpeg&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-y&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="s2">&quot;image2pipe&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-vcodec&quot;</span><span class="p">,</span> <span class="s2">&quot;bmp&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-vf&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;scale=</span><span class="si">{</span><span class="n">cols</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">rows</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="s2">&quot;frame</span><span class="si">%04d</span><span class="s2">.bmp&quot;</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">DEVNULL</span><span class="p">,</span>
+        <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span>
+    <span class="p">)</span>
+</code></pre></div>
+
+<p>After storing the frames to a folder, I would need to fetch them from that folder and print them to the screen. I didn't want to have to wait for all the frames to be created before doing this though, since that would just be a waste of time. So, I wrote this functionality with the intention of fetching frames <em>while</em> they were being generated.</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">delete_video_frame</span><span class="p">(</span><span class="n">frame</span><span class="p">):</span>
+    <span class="n">frame_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">frame</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">frame_path</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">clear_terminal</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;nt&#39;</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;cls&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;clear&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_print</span><span class="p">(</span><span class="n">frame</span><span class="p">):</span>
+    <span class="n">frame_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">frame</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">frame_path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="c1"># BMP file header</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">video_start</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+
+        <span class="c1"># DIB header section</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">18</span><span class="p">)</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">28</span><span class="p">)</span>
+        <span class="n">bits_per_pixel</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Calculate row size and padding</span>
+        <span class="n">row_size</span> <span class="o">=</span> <span class="p">((</span><span class="n">bits_per_pixel</span> <span class="o">*</span> <span class="n">width</span> <span class="o">+</span> <span class="mi">31</span><span class="p">)</span> <span class="o">//</span> <span class="mi">32</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span>
+
+        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">height</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="c1"># Move file pointer to the start of the current row</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">video_start</span> <span class="o">+</span> <span class="n">y</span> <span class="o">*</span> <span class="n">row_size</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">width</span><span class="p">):</span>
+                <span class="c1"># Little endian means that RGB is now BGR</span>
+                <span class="n">blue</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+                <span class="n">green</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+                <span class="n">red</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\u001B</span><span class="s2">[38;2;</span><span class="si">{</span><span class="n">red</span><span class="si">}</span><span class="s2">;</span><span class="si">{</span><span class="n">green</span><span class="si">}</span><span class="s2">;</span><span class="si">{</span><span class="n">blue</span><span class="si">}</span><span class="s2">m&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">print_char</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\u001B</span><span class="s2">[0m&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+            <span class="nb">print</span><span class="p">()</span>
+
+    <span class="n">clear_terminal</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">print_frames</span><span class="p">():</span>
+    <span class="n">retries</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">frames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span>
+
+        <span class="c1"># If no new frames are being generated, end program</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">retries</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">retries</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">exit</span><span class="p">()</span>
+
+            <span class="k">continue</span>
+
+        <span class="c1"># Prints all available frames before fetching more</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">_print</span><span class="p">(</span><span class="n">frames</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">delete_video_frame</span><span class="p">(</span><span class="n">frames</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">frames</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</code></pre></div>
+
+<p>The <code>_print</code> function uses the exact same code I wrote to parse and print <code>bmp</code> image files in the previous post.</p>
+<p>With the main parts of the program finished, all I had to do was run it correctly. I decided to use <a href="https://en.wikipedia.org/wiki/Multithreading_(computer_architecture)">multithreading</a> to run the functions in parallel instead of in sequence.</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">frame_generation</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">generate_video_frames</span><span class="p">)</span>
+    <span class="n">frame_display</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">print_frames</span><span class="p">)</span>
+
+    <span class="n">frame_generation</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span> <span class="c1"># Giving it some time to generate a few images (I&#39;m so kind)</span>
+    <span class="n">frame_display</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</code></pre></div>
+
+<p>After running this, I got the following result:</p>
+<div style="position:relative; width:100%; height:0px; padding-bottom:56.250%"><iframe allow="fullscreen;autoplay" allowfullscreen height="100%" src="https://streamable.com/e/9u4hh3?autoplay=1&muted=1&nocontrols=1" width="100%" style="border:none; width:100%; height:100%; position:absolute; left:0px; top:0px; overflow:hidden;"></iframe></div>
+
+<p>Hehe. Got you.</p>
+<p>I was happy to get a video "playing". But, that's the thing. The video was "playing", not <em>playing</em>.</p>
+<p>This takes me to the next part of this project.</p>
+<h1>Optimizations</h1>
+<p>There was a lot to improve, so I started with the most obvious.</p>
+<h2>Optimization #1 - Getting rid of the flickering</h2>
+<p>My limited knowledge of rendering led me to believe that the flickering was unavoidable because an image had to be drawn for each frame.</p>
+<p>What I didn't know was that the above statement was only partially true. Yes, the frames have to be drawn in sequence so you can get that feeling of a moving video. But, there are more efficient ways of drawing frames in quick succession. The solution I ended up with used a mixture of two techniques I found online.</p>
+<h3>Double Buffering</h3>
+<p>This was surprisingly simple to understand. It refers to saving all individual data to a buffer, and using the whole buffer at once, instead of using each piece of data at a time.</p>
+<p>To achieve this in my program, I updated the <code>_print</code> function to store all the pixels into a string, and printed out the string in one operation.</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">_print</span><span class="p">(</span><span class="n">frame</span><span class="p">):</span>
+    <span class="n">frame_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">frame</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">frame_path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="c1"># BMP file parsing...</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">height</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="c1"># Move file pointer to the start of the current row</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">video_start</span> <span class="o">+</span> <span class="n">y</span> <span class="o">*</span> <span class="n">row_size</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">width</span><span class="p">):</span>
+                <span class="c1"># Little endian means that RGB is now BGR</span>
+                <span class="n">blue</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+                <span class="n">green</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+                <span class="n">red</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+
+                <span class="c1"># Double Buffering: Saves all the data to a variable,</span>
+                <span class="c1"># which is then printed to the screen in one action</span>
+                <span class="n">output</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\u001B</span><span class="s2">[38;2;</span><span class="si">{</span><span class="n">red</span><span class="si">}</span><span class="s2">;</span><span class="si">{</span><span class="n">green</span><span class="si">}</span><span class="s2">;</span><span class="si">{</span><span class="n">blue</span><span class="si">}</span><span class="s2">m&quot;</span>
+                <span class="n">output</span> <span class="o">+=</span> <span class="n">print_char</span>
+                <span class="n">output</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\u001B</span><span class="s2">[0m&quot;</span>
+
+            <span class="n">output</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+
+    <span class="n">clear_terminal</span><span class="p">()</span>
+</code></pre></div>
+
+<p>This resulted in faster drawing times for each frame, which was a huge plus in my book.</p>
+<p>It's not perfect though, since it leads to lag on larger terminal sizes due to all the pixels having to be stored before any can be printed out. But it was good enough for me.</p>
+<h3>Resetting the cursor to the start of the frame</h3>
+<p>This. This was the real game changer.</p>
+<p>The idea here is so wonderful that I didn't believe it was even legal. Felt too good to be true.</p>
+<p>Basically, instead of clearing the entire terminal and printing out a new frame, you instead use an ANSI escape code to, this is the magical part, <em>set the cursor to the start of the old frame.</em></p>
+<p>This does two things:</p>
+<ul>
+<li>Allows you to overwrite the old frame data.</li>
+<li>Removes the need for clearing the screen.</li>
+</ul>
+<p>So you get a video frame that's updated instanteneously, and in the same place. No scrolling. No screen clearing. No <em>flickering.</em></p>
+<p>This is the ANSI code to set the cursor to the top-left of the screen: <strong>\033[H</strong></p>
+<p>I updated my code to include this.</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">_print</span><span class="p">(</span><span class="n">frame</span><span class="p">):</span>
+    <span class="c1"># Everything else stays the same...</span>
+
+    <span class="c1"># Moves cursor back to top of display buffer, to allow for overwriting of written data</span>
+    <span class="c1"># instead of clearing the entire terminal</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[H&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>The results of using these two techniques in the code are, for lack of a better word, glorious:</p>
+<div style="position:relative; width:100%; height:0px; padding-bottom:56.250%"><iframe allow="fullscreen;autoplay" allowfullscreen height="100%" src="https://streamable.com/e/mdlmnx?autoplay=1&muted=1&nocontrols=1" width="100%" style="border:none; width:100%; height:100%; position:absolute; left:0px; top:0px; overflow:hidden;"></iframe></div>
+
+<h2>Optimization #2 - Streaming video data into the program</h2>
+<p>I'm sure your eyes almost popped out of your head when you saw this line somewhere above:</p>
+<blockquote>
+<p>I made sure to save the generated frames to a folder with the same name as the video file, just to make things easier to track.</p>
+</blockquote>
+<p>No? Really? What about this line then:</p>
+<blockquote>
+<p>I decided to use multithreading to run the functions in parallel instead of in sequence.</p>
+</blockquote>
+<p>I'm sure this caused some headaches.</p>
+<p>In any case, I was well aware of the inefficient approaches depicted in those statements. Since I had succeeded in creating a working video player, there was no need to keep them in there. So my next optimization was streaming the generated frames directly into the program for immediate use.</p>
+<h3>We don't need the folder</h3>
+<p>The folder served as a store for the generated video frames. But there were two issues with this:</p>
+<ul>
+<li>Saving generated images adds a lot of overhead to the program, leading to slow/laggy video playback.</li>
+<li>The folders got big. Fast.</li>
+</ul>
+<p>The image below shows just the beginning frames of the video being played. The number frames being stored increases as the program runs, until all frames have been generated and the program can consume them at a steady rate.</p>
+<p><img alt="A bunch of frames" src="/images/frame_folder.png"></p>
+<p>The solution here was to delete the second half of the frame generation command. I renamed the <code>generate_video_frames</code> function to <code>process_video_frames</code>, just for consistency.</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">process_video_frames</span><span class="p">():</span>
+    <span class="n">cols</span><span class="p">,</span> <span class="n">rows</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">get_terminal_size</span><span class="p">()</span>
+
+    <span class="n">command</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;ffmpeg&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span>
+        <span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="s2">&quot;image2pipe&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-vcodec&quot;</span><span class="p">,</span> <span class="s2">&quot;bmp&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-vf&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;scale=</span><span class="si">{</span><span class="n">cols</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">rows</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-&quot;</span>
+    <span class="p">]</span>
+
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="n">command</span><span class="p">,</span>
+        <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">DEVNULL</span><span class="p">,</span>
+        <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span>
+    <span class="p">)</span>
+</code></pre></div>
+
+<p>Now, the program generates frames and sends them as an output stream. But, how are we gonna use it?</p>
+<h3>Accepting video frame streams</h3>
+<p>This part was daunting, but I wouldn't be writing this blog post if I didn't figure it out, so let's get into it.</p>
+<p>The first step was to point the output stream to a handler that I could access from my code. This would mean setting the <code>stdout</code> argument to the <code>subprocess.PIPE</code> object. I then had to save the running process into a variable I could access.</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">process_video_frames</span><span class="p">():</span>
+    <span class="n">cols</span><span class="p">,</span> <span class="n">rows</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">get_terminal_size</span><span class="p">()</span>
+
+    <span class="n">command</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;ffmpeg&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span>
+        <span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="s2">&quot;image2pipe&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-vcodec&quot;</span><span class="p">,</span> <span class="s2">&quot;bmp&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-vf&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;scale=</span><span class="si">{</span><span class="n">cols</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">rows</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-&quot;</span>
+    <span class="p">]</span>
+
+    <span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+        <span class="n">command</span><span class="p">,</span>
+        <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+        <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">DEVNULL</span>
+    <span class="p">)</span>
+</code></pre></div>
+
+<p>Next, I had to read the command's output in a loop until it had no more frames to give me, after which I could clear the terminal and exit the program. My knowledge of <code>bmp</code> format parsing came in handy here.</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">process_video_frames</span><span class="p">():</span>
+    <span class="c1"># Everything stays the same...</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">14</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">header</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">14</span><span class="p">:</span>
+            <span class="k">break</span>
+
+        <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">6</span><span class="p">],</span> <span class="s1">&#39;little&#39;</span><span class="p">)</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">header</span> <span class="o">+</span> <span class="n">process</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">size</span> <span class="o">-</span> <span class="mi">14</span><span class="p">)</span>
+
+        <span class="n">_print</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+
+    <span class="n">clear_terminal</span><span class="p">()</span>
+    <span class="n">exit</span><span class="p">()</span>
+</code></pre></div>
+
+<p>From here, I had to rewrite my <code>_print</code> function to read from a stream instead of reading bytes from a file. The <a href="https://docs.python.org/3/library/io.html">io</a> library helped a lot with this.</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">_print</span><span class="p">(</span><span class="n">frame</span><span class="p">):</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+
+    <span class="c1"># Everything else stays the same...</span>
+</code></pre></div>
+
+<p>And... that was it. I had successfully removed the need for video frame storage, and optimized my program to directly process the streamed video data instead.</p>
+<p>As a plus, I didn't even have to use multithreading anymore, since the program could now process all the frames in a single thread.</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">process_video_frames</span><span class="p">()</span>
+</code></pre></div>
+
+<p>This resulted in faster video playback, with almost no lag. Sometimes, its too fast though. I haven't adjusted it to play in sync with the video's original framerate yet, lmao.</p>
+<p>I <em>would</em> show you, but I think it's better if you try it out yourself.</p>
+<p>You can get it from <a href="https://github.com/ARandomBoiIsMe/ANSInema">here</a>. Forgive the terrible name.</p>
+<p>Oh yeah, as a bonus, <a href="https://x.com/arandomboiisme/status/1833553582013972849">I got it to play Bad Apple</a> :)</p>
+<p>I'm working on adding support for video calls. Yeah, in the terminal. That'll probably be another blog post.</p>
+<p>That's all for now. Until next time, thanks for reading!</p>
+    </div>
+</div>
+
+    </div>
+
+    <script src="/theme/js/showoff.js"></script>
+
+    <footer>
+
+<div class="footer">
+    <p >
+        <br>
+        Proudly made with
+        <a href="https://getpelican.com/">Pelican</a>;
+    </p>
+
+    <p >
+        <br>
+        Inspired by
+        <a href="https://vlimki.dev/">vlimki.dev</a> and
+        <a href="https://gurudas.dev/">gurudas.dev</a>;
+    </p>
+</div>
+    </footer>
+</body>
+</html>
